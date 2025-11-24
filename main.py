@@ -7,6 +7,11 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 import os
+import sounddevice as sd
+from scipy.io.wavfile import write
+# Importando a biblioteca whisper
+import whisper # Biblioteca esta responsavél pela transcrição
+
 load_dotenv()
 CAMINHO_DB = "db_context"
 groq_api_key = os.getenv("GROQ_API_KEY")
@@ -38,9 +43,32 @@ Pergunta:
 {pergunta}
 """
 
-def perguntar():
-  pergunta = input("Digite sua pergunta: ")
+def transcricao_audio():
+  qualidade_audio = 16000 # taxa de amostragem em Hz, 16000 Hz é suficiente para voz e recomendado para modelos como o Whisper.
+  duracao = 10 # duracao da gravação do áudio
 
+  print('Iniciando gravação!')
+  # Inicia a gravação do microfone e retorna uma lista onde o áudio será armazenado
+  audio = sd.rec(int(duracao * qualidade_audio), samplerate=qualidade_audio, channels=1)
+  # Espera até a gravação terminar
+  sd.wait()
+  print('Gravação concluida!')
+
+  # lista audio salva em um arquivo wav
+  write('gravacao.wav', qualidade_audio, audio)
+
+  # Escolhendo o modelo para realizar a transcrição
+  modelo = whisper.load_model("base")
+
+  # Armazenando o áudio que será transcrito
+  resposta = modelo.transcribe("gravacao.wav", language="pt", task="transcribe")
+
+  # Imprimindo transcrição
+  print('Transcrição realizada!!!')
+  print(resposta['text'])
+  return resposta
+
+def perguntar(pergunta):
   funcao_embedding = HuggingFaceEmbeddings(
       model_name="sentence-transformers/all-MiniLM-L6-v2"
   )
@@ -68,4 +96,6 @@ def perguntar():
   resposta = modelo.invoke(prompt)
   print(resposta.content)
   return resposta.content
-perguntar()
+
+pergunta = transcricao_audio()
+perguntar(pergunta)
