@@ -11,6 +11,9 @@ import sounddevice as sd
 from scipy.io.wavfile import write
 # Importando a biblioteca whisper
 import whisper # Biblioteca esta responsavél pela transcrição
+from gtts import gTTS
+import tempfile
+import subprocess
 
 load_dotenv()
 CAMINHO_DB = "db_context"
