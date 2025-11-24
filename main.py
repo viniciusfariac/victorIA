@@ -97,5 +97,21 @@ def perguntar(pergunta):
   print(resposta.content)
   return resposta.content
 
+def texto_para_audio(texto: str, idioma="pt") -> str:
+    tts = gTTS(texto, lang=idioma)
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".mp3")
+    tts.save(temp_file.name)
+    return temp_file.name
+
+def tocar_audio(caminho_audio: str):
+    subprocess.run([
+        "ffplay",
+        "-nodisp",
+        "-autoexit",
+        caminho_audio
+    ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
 pergunta = transcricao_audio()
-perguntar(pergunta)
+resposta_ia = perguntar(pergunta)
+temp_file = texto_para_audio(resposta_ia)
+tocar_audio(temp_file)
