@@ -67,4 +67,5 @@ def perguntar():
   )
   resposta = modelo.invoke(prompt)
   print(resposta.content)
+  return resposta.content
 perguntar()
