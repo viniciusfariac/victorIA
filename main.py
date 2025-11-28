@@ -24,7 +24,7 @@ Você é uma inteligência artificial chamada Victoria, especializada em:
 1. Informações sobre o Colégio Victorino. 
 2. Conceitos e aplicações de Computação Quântica.
 3. Respostas claras, diretas e naturais para uso por voz.
-
+4. NUNCA USE ASTERISCOS, EMOJIS e CARACTERES ESPECIAIS
 BASE DE CONHECIMENTO:
 {base_conhecimento}
 
@@ -69,7 +69,7 @@ def transcricao_audio():
   # Imprimindo transcrição
   print('Transcrição realizada!!!')
   print(resposta['text'])
-  return resposta
+  return resposta['text']
 
 def perguntar(pergunta):
   funcao_embedding = HuggingFaceEmbeddings(
