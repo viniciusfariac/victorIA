@@ -5,12 +5,15 @@ from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 import os
 import sounddevice as sd
+import edge_tts
 from scipy.io.wavfile import write
 # Importando a biblioteca whisper
 import whisper
 from gtts import gTTS
 import tempfile
 import subprocess
+import tempfile
+import asyncio
 
 load_dotenv()
 CAMINHO_DB = "db_context"
@@ -25,6 +28,7 @@ Você é uma inteligência artificial chamada Victoria, especializada em:
 3. Respostas claras, diretas e naturais para uso por voz.
 4. NUNCA USE ASTERISCOS, EMOJIS e CARACTERES ESPECIAIS
 BASE DE CONHECIMENTO:
+5. AS RESPOSTAS TEM QUE SER MUITO CURTA, O MINIMO POSSIVEL
 {base_conhecimento}
 
 INSTRUÇÕES GERAIS:
@@ -50,7 +54,7 @@ Pergunta:
 
 def transcricao_audio():
   qualidade_audio = 16000 # taxa de amostragem em Hz, 16000 Hz é suficiente para voz e recomendado para modelos como o Whisper.
-  duracao = 10 # duracao da gravação do áudio
+  duracao = 5 # duracao da gravação do áudio
 
   print('Iniciando gravação!')
   # Inicia a gravação do microfone e retorna uma lista onde o áudio será armazenado
@@ -110,11 +114,20 @@ def perguntar(pergunta):
   print(resposta.content)
   return resposta.content
 
-def texto_para_audio(texto: str, idioma="pt") -> str:
-    tts = gTTS(texto, lang=idioma)
-    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".mp3")
-    tts.save(temp_file.name)
-    return temp_file.name
+# def texto_para_audio(texto: str, idioma="pt") -> str:
+#     tts = gTTS(texto, lang=idioma)
+#     temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".mp3")
+#     tts.save(temp_file.name)
+#     return temp_file.name
+
+def texto_para_audio(texto: str, voz="pt-BR-FranciscaNeural") -> str:
+    async def gerar():
+        communicate = edge_tts.Communicate(texto, voice=voz)
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".mp3")
+        await communicate.save(temp_file.name)
+        return temp_file.name
+
+    return asyncio.run(gerar())
 
 def tocar_audio(caminho_audio: str):
     subprocess.run([

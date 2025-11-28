@@ -90,7 +90,7 @@ def iniciar_interface():
     # Criar janela principal
     janela = tk.Tk()
     janela.title("VictorIA - Assistente Virtual")
-    janela.state('zoomed')  
+    # janela.state('zoomed') (Habilitar apenas para Windows)
     janela.configure(bg="#111111")
 
     # Frame centralizado
