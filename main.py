@@ -1,4 +1,3 @@
-## Desenvolvimento...
 from langchain_community.document_loaders import PyPDFDirectoryLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_chroma.vectorstores import Chroma
@@ -9,8 +8,7 @@ from dotenv import load_dotenv
 import os
 import sounddevice as sd
 from scipy.io.wavfile import write
-# Importando a biblioteca whisper
-import whisper # Biblioteca esta responsavél pela transcrição
+import whisper
 from gtts import gTTS
 import tempfile
 import subprocess
@@ -18,6 +16,8 @@ import subprocess
 load_dotenv()
 CAMINHO_DB = "db_context"
 groq_api_key = os.getenv("GROQ_API_KEY")
+
+historico = []
 
 prompt_template = """"
 Você é uma inteligência artificial chamada Victoria, especializada em:
@@ -39,6 +39,9 @@ INSTRUÇÕES GERAIS:
 - Suas respostas devem ser curtas o suficiente para serem ouvidas, mas completas o bastante para esclarecer.
 - Nunca invente fatos sobre o Colégio Victorino; use apenas a base.
 - Não quebre o personagem: você é Victoria, uma IA educada, profissional e gentil.
+
+HISTÓRICO DA CONVERSA:
+{historico}
 
 AGORA RESPONDA A PERGUNTA DO USUÁRIO:
 
@@ -72,6 +75,7 @@ def transcricao_audio():
   return resposta['text']
 
 def perguntar(pergunta):
+  global historico
   funcao_embedding = HuggingFaceEmbeddings(
       model_name="sentence-transformers/all-MiniLM-L6-v2"
   )
@@ -80,8 +84,7 @@ def perguntar(pergunta):
   resultados = db.similarity_search_with_relevance_scores(pergunta)
 
   if len(resultados) == 0 or resultados[0][1] < 0.1:
-    print("Sem informações relevantes")  
-  # print(resultados, len(resultados))
+    print("Sem informações relevantes")
 
   texto_resultados = []
   for resultado in resultados:
@@ -89,14 +92,22 @@ def perguntar(pergunta):
     texto_resultados.append(texto)
   base_conhecimento = "\n\n----\n\n".join(texto_resultados)
   prompt = ChatPromptTemplate.from_template(prompt_template)
-  prompt = prompt.invoke({"pergunta": pergunta, "base_conhecimento": base_conhecimento})
-  
+  prompt = prompt.invoke({
+      "pergunta": pergunta,
+      "base_conhecimento": base_conhecimento,
+      "historico": "\n".join(historico)
+  })
+
   modelo = ChatGroq(
     groq_api_key=groq_api_key,
     model="openai/gpt-oss-20b",
     temperature=0.2
   )
   resposta = modelo.invoke(prompt)
+
+  historico.append(f"Usuário: {pergunta}")
+  historico.append(f"victorIA: {resposta.content}")
+
   print(resposta.content)
   return resposta.content
 
