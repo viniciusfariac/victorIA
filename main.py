@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 import os
 import sounddevice as sd
 from scipy.io.wavfile import write
+# Importando a biblioteca whisper
 import whisper
 from gtts import gTTS
 import tempfile
@@ -125,7 +126,11 @@ def tocar_audio(caminho_audio: str):
         caminho_audio
     ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-pergunta = transcricao_audio()
-resposta_ia = perguntar(pergunta)
-temp_file = texto_para_audio(resposta_ia)
-tocar_audio(temp_file)
+# pergunta = transcricao_audio()
+# resposta_ia = perguntar(pergunta)
+# temp_file = texto_para_audio(resposta_ia)
+# tocar_audio(temp_file)
+
+if __name__ == "__main__":
+    from gui.main_window import iniciar_interface
+    iniciar_interface()
